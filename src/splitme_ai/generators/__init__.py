@@ -1,3 +1,6 @@
-from splitme_ai.generators.mkdocs_config import MkDocsConfig
+"""Package initialization for generators module."""
 
-__all__: list[str] = ["MkDocsConfig"]
+from splitme_ai.generators.mkdocs.config import create_mkdocs_config
+from splitme_ai.generators.mkdocs.models import MkDocsConfig
+
+__all__ = ["MkDocsConfig", "create_mkdocs_config"]

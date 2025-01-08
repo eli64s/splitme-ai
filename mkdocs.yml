@@ -1,13 +1,15 @@
 # -- SPLITME-AI Mkdocs Static Site Configuration ----------------------------
 
 site_name: splitme-ai
-site_description: "Markdown splitter for modular docs and flexible content."
-site_author: "splitme-ai"
+site_description: "Break down docs, build up knowledge. A Markdown splitter for modular docs and maximum flexibility."
+site_author: Eli Salamie"
+site_url: https://docs.splitme-ai.com/
+site_dir: site
 repo_name: eli64s/splitme-ai
 repo_url: https://github.com/eli64s/splitme-ai
 edit_uri: edit/main/docs/
 docs_dir: "docs/"
-copyright: "© 2024 splitme-ai"
+copyright: "© 2024-2025 splitme-ai"
 
 theme:
   name: material
@@ -17,13 +19,79 @@ theme:
     edit: material/pencil
     view: material/eye
   palette:
-    primary: "deep-purple"
-    accent: "white"
+    - scheme: light
+      primary: white
+      accent: deep-purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to light mode
+    - scheme: dark
+      primary: black
+      accent: deep-purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to dark mode
+  features:
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+    - navigation.path
+    - navigation.indexes
+    - navigation.sections
+    - navigation.tracking
+    - toc.follow
 
 markdown_extensions:
-- admonition
-- pymdownx.details
-- pymdownx.superfences
+  - tables
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.mark
+  - pymdownx.superfences
+  - pymdownx.snippets
+  - pymdownx.tilde
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      pygments_lang_class: true
+  - pymdownx.extra:
+      pymdownx.superfences:
+        custom_fences:
+          - name: mermaid
+            class: mermaid
+            format: !!python/name:pymdownx.superfences.fence_code_format ""
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji ""
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg ""
+      options:
+        custom_icons:
+          - docs/overrides/.icons
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
 
 plugins:
-- search
+  - search
+
+nav:
+  - Home:
+      - Introduction: index.md
+      - Quick Start: getting-started/prerequisites.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Configuration: getting-started/configuration.md
+      - Usage:
+          - Splitting Examples: getting-started/splitting-examples.md
+  - CLI Reference: cli-reference.md
+  - Community: contributing.md
+
+extra_css:
+  - css/extra.css
+extra_javascript:
+  - js/extra.js

@@ -4,9 +4,9 @@ requires = [ "hatch-fancy-pypi-readme>=22.5", "hatchling" ]
 
 [project]
 name = "splitme-ai"
-version = "0.1.8"
+version = "0.1.9"
+authors = [ { name = "Eli Salamie", email = "egsalamie@gmail.com" } ]
 description = "Break down docs, build up knowledge."
-readme = "README.md"
 keywords = [
     "ai",
     "devtools",
@@ -20,16 +20,30 @@ keywords = [
     "readme",
 ]
 license = "MIT"
-authors = [ { name = "Eli Salamie", email = "egsalamie@gmail.com" } ]
-requires-python = ">=3.9, <=3.13"
+readme = "README.md"
 classifiers = [
+    "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Unix",
+    "Operating System :: POSIX :: Linux",
+    "Environment :: Console",
+    "Environment :: MacOS X",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Internet",
+    "Framework :: Pydantic",
+    "Framework :: Pytest",
 ]
+requires-python = ">=3.9"
+
 dependencies = [
     "aiofiles>=24.1.0",
     "pydantic>=2.10.3",
@@ -38,15 +52,19 @@ dependencies = [
     "toml>=0.10.2 ; python_full_version < '3.11'",
 ]
 
-optional-dependencies.ai = [
+[project.urls]
+Homepage = "https://docs.splitme-ai.com"
+Source = "https://github.com/eli64s/splitme-ai"
+Documentation = "https://docs.splitme-ai.com"
+Changelog = "https://github.com/eli64s/splitme-ai/tags"
+
+[project.optional-dependencies]
+ai = [
     "pydantic-ai>=0.0.15",
 ]
-optional-dependencies.docs = [
-    "mkdocs>=1.6.1",
-    "mkdocs-material>=9.5.47",
-]
-urls.Homepage = 'https://github.com/eli64s/splitme-ai'
-scripts.splitme-ai = "splitme_ai.core:main"
+
+[project.scripts]
+splitme-ai = "splitme_ai.__main__:run_async_main"
 
 [dependency-groups]
 dev = [
@@ -77,8 +95,8 @@ lint = [
 [tool.hatch.build.targets.wheel]
 packages = [ "src/splitme_ai" ]
 
-[tool.hatch.version]
-path = 'src/splitme_ai/__init__.py'
+# [tool.hatch.version]
+# path = 'src/splitme_ai/__init__.py'
 
 [tool.hatch.metadata]
 allow-direct-references = true
@@ -142,7 +160,6 @@ omit = [
     "examples/*",
     "tests/*",
     "**/__init__.py",
-    "noxfile.py",
 ]
 source = ["splitme_ai"]
 
@@ -159,4 +176,9 @@ include = [ "splitme_ai", "tests" ]
 venvPath = ".venv"
 executionEnvironments = [
     { root = "tests", reportUnusedFunction = false },
+]
+
+[tool.uv]
+dev-dependencies = [
+    "ipykernel>=6.29.5",
 ]

@@ -1,0 +1,5 @@
+case_sensitive: false
+generate_mkdocs: true
+preserve_context: true
+heading_level: 'h5'
+output_dir: .splitme-ai/test-docs

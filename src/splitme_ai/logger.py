@@ -2,7 +2,7 @@
 
 import logging
 import sys
-import typing
+from typing import Any, ClassVar, Dict
 
 LOG_LEVEL_EMOJIS = {
     "DEBUG": "⚙︎",
@@ -20,7 +20,6 @@ LOG_LEVEL_COLORS = {
     "CRITICAL": "\033[31m\033[1m",
 }
 
-
 RESET_COLOR = "\033[0m"
 
 
@@ -29,7 +28,7 @@ class CustomFormatter(logging.Formatter):
     Custom logging formatter with color and emoji support.
     """
 
-    def format(self, record) -> str:
+    def format(self, record: logging.LogRecord) -> str:
         """Format the log record."""
         record.emoji = LOG_LEVEL_EMOJIS.get(record.levelname, "")
         record.color = LOG_LEVEL_COLORS.get(record.levelname, "")
@@ -42,19 +41,27 @@ class Logger:
     Custom logger class for the splitme-ai package.
     """
 
-    _instances: typing.ClassVar[dict[str, "Logger"]] = {}
+    _instances: ClassVar[Dict[str, "Logger"]] = {}
+    _configured_loggers: ClassVar[set[str]] = set()
 
-    def __new__(cls, name, level="DEBUG"):
+    def __new__(cls, name: str, level: int = logging.DEBUG) -> "Logger":
         """Creates a new logger instance."""
         if name not in cls._instances:
             instance = super().__new__(cls)
             instance._name = name
             instance._level = level
-            instance._configure_logger()
+            instance._logger = logging.getLogger(name)
+            if name not in cls._configured_loggers:
+                instance._configure_logger()
+                cls._configured_loggers.add(name)
             cls._instances[name] = instance
         return cls._instances[name]
 
-    def _configure_logger(self):
+    def __init__(self, name: str, level: int = logging.DEBUG) -> None:
+        """Initialize is called after __new__, but we handle everything in __new__."""
+        pass
+
+    def _configure_logger(self) -> None:
         """Configures the logger."""
         formatter = CustomFormatter(
             "%(asctime)s | %(name)s | %(levelname)s | %(message)s",
@@ -62,30 +69,31 @@ class Logger:
         )
         handler = logging.StreamHandler(sys.stderr)
         handler.setFormatter(formatter)
-        logger = logging.getLogger(self._name)
-        logger.addHandler(handler)
-        logger.setLevel(self._level)
+        self._logger.addHandler(handler)
+        self._logger.setLevel(self._level)
+        # Prevent propagation to prevent duplicate logs
+        self._logger.propagate = False
 
-    def info(self, msg, *args, **kwargs):
+    def info(self, msg: str, *args: Any, **kwargs: Any) -> None:
         """Logs an info message."""
-        logging.getLogger(self._name).info(msg, *args, **kwargs)
+        self._logger.info(msg, *args, **kwargs)
 
-    def debug(self, msg, *args, **kwargs):
+    def debug(self, msg: str, *args: Any, **kwargs: Any) -> None:
         """Logs a debug message."""
-        logging.getLogger(self._name).debug(msg, *args, **kwargs)
+        self._logger.debug(msg, *args, **kwargs)
 
-    def warning(self, msg, *args, **kwargs):
+    def warning(self, msg: str, *args: Any, **kwargs: Any) -> None:
         """Logs a warning message."""
-        logging.getLogger(self._name).warning(msg, *args, **kwargs)
+        self._logger.warning(msg, *args, **kwargs)
 
-    def error(self, msg, *args, **kwargs):
+    def error(self, msg: str, *args: Any, **kwargs: Any) -> None:
         """Logs an error message."""
-        logging.getLogger(self._name).error(msg, *args, **kwargs)
+        self._logger.error(msg, *args, **kwargs)
 
-    def critical(self, msg, *args, **kwargs):
+    def critical(self, msg: str, *args: Any, **kwargs: Any) -> None:
         """Logs a critical message."""
-        logging.getLogger(self._name).critical(msg, *args, **kwargs)
+        self._logger.critical(msg, *args, **kwargs)
 
-    def log(self, level, msg, *args, **kwargs):
+    def log(self, level: int, msg: str, *args: Any, **kwargs: Any) -> None:
         """Logs a message at the specified level."""
-        logging.getLogger(self._name).log(level, msg, *args, **kwargs)
+        self._logger.log(level, msg, *args, **kwargs)

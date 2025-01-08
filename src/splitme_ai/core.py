@@ -5,9 +5,10 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from splitme_ai.cli import SplitmeApp
+from splitme_ai.file_manager import FileHandler
 from splitme_ai.logger import Logger
 from splitme_ai.settings import SplitmeSettings
 from splitme_ai.utils.filename_sanitizer import sanitize_filename
@@ -35,17 +36,20 @@ class Section:
 
 
 class MarkdownSplitter:
-    """Splits markdown documents based on headings."""
+    """
+    Splits markdown documents based on headings.
+    """
 
-    def __init__(self, settings: Optional[SplitmeSettings] = None) -> None:
-        self.settings = settings or SplitmeSettings()
+    def __init__(self, settings: SplitmeSettings) -> None:
+        self.settings = settings
+        self.file_handler = FileHandler()
         self._compile_patterns()
         _logger.debug(f"Initialized MarkdownSplitter with settings: {self.settings}")
 
-    def process_file(self, content: str) -> List[Section]:
+    async def process_file(self, content: str) -> List[Section]:
         """Process markdown file, split it, and handle additional steps."""
         _logger.info("Starting markdown file processing")
-        sections = self.split(content)
+        sections: List[Section] = await self.split(content)
 
         _logger.debug(f"Creating output directory: {self.settings.output_dir}")
         self.settings.output_dir.mkdir(parents=True, exist_ok=True)
@@ -53,7 +57,10 @@ class MarkdownSplitter:
         for section in sections:
             section_path = self.settings.output_dir / section.filename
             _logger.debug(f"Writing section '{section.title}' to {section_path}")
-            section_path.write_text(section.content, encoding="utf-8")
+            # section_path.write_text(section.content, encoding="utf-8")
+            await self.file_handler.write(
+                file_path=section_path, content=section.content
+            )
 
         if hasattr(self.settings, "process_mkdocs"):
             _logger.info("Mkdocs configuration enabled. Processing...")
@@ -62,7 +69,7 @@ class MarkdownSplitter:
         _logger.info("File processing completed successfully")
         return sections
 
-    def split(self, content: str) -> List[Section]:
+    async def split(self, content: str) -> List[Section]:
         """
         Split markdown content into sections based on specified heading level.
         Respects heading hierarchy - only splits at specified level and includes
@@ -78,7 +85,7 @@ class MarkdownSplitter:
         )
 
         # First, identify all code block positions to exclude them from heading search
-        code_blocks = []
+        code_blocks: List[BlockMatch] = []
 
         # Match fenced code blocks (both ``` and ~~~)
         fenced_blocks = re.finditer(
@@ -140,7 +147,7 @@ class MarkdownSplitter:
 
         # Target heading level is determined by number of # in settings
         target_level = len(self.settings.heading_level)
-        sections = []
+        sections: List[Section] = []
 
         # Track the current section being built
         current_section_start = None
@@ -179,11 +186,12 @@ class MarkdownSplitter:
                 current_section_start = heading_start
                 current_section_title = heading_title
 
+            # This is nested content for the current section, do nothing
             elif heading_level > target_level and current_section_start is not None:
-                # This is nested content for the current section, do nothing
                 continue
+
+            # This is a higher-level heading, ignore its content
             elif heading_level < target_level:
-                # This is a higher-level heading, ignore its content
                 if current_section_start is not None:
                     section_content = content[
                         current_section_start:heading_start
@@ -216,8 +224,8 @@ class MarkdownSplitter:
                     references=section_refs,
                 )
             )
+        _logger.info(f"Split content into {len(sections)} sections.")
 
-        _logger.info(f"Successfully split content into {len(sections)} sections.")
         return sections
 
     def _compile_patterns(self) -> None:
@@ -282,12 +290,7 @@ class MarkdownSplitter:
         return base_content.rstrip() + "\n"
 
 
-def main():
+async def main() -> None:
     """CLI entry point for splitme-ai."""
-    _logger.info("Starting splitme_ai CLI")
     app = SplitmeApp()
-    app.cli_cmd()
-
-
-if __name__ == "__main__":
-    main()
+    await app.cli_cmd()
